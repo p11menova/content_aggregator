@@ -29,12 +29,13 @@ def convert_to_classes(news_from_source: List) -> List[News]:
         try:
             format_from = "%a, %d %b %Y %H:%M:%S %z"
             format_to = "%a %d %b %Y %H:%M:%S"
-            instance = News(elem.find('category').getText(),
-                            elem.find('title').getText(),
-                            elem.find('description').getText().strip(),
-                            elem.find('description').getText().strip(),
-                            dt.datetime.strptime(elem.find('pubDate').get_text(),
+            instance = News(theme=elem.find('category').getText(),
+                            title=elem.find('title').getText(),
+                            brief=elem.find('description').getText().strip(),
+                            text=elem.find('description').getText().strip(),
+                            date=dt.datetime.strptime(elem.find('pubDate').get_text(),
                                                  format_from).strftime(format_to))
+
             converted_news.append(instance)
         except AttributeError as err:
             print(err)
@@ -58,7 +59,7 @@ def main():
     news_from_source = get_content()
     converted_news = convert_to_classes(news_from_source)
     save_to_newslist(converted_news)
-    filtered_with_category_news = myNewsList.get_certain_category(['Политика', 'Наука'])
+    filtered_with_category_news = myNewsList.get_certain_category([])
 
 
 if __name__ == '__main__':

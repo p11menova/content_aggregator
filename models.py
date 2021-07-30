@@ -21,15 +21,16 @@ class News:
     def get_data(self):
         """ получение полных моделей
         :return: все данные о модели """
-        model_dict = {'title': self.title, 'theme': self.theme,
-                      'text': self.text}
+        model_dict = {'id': self.id, 'title': self.title,
+                      'theme': self.theme, 'text': self.text,
+                      'date': self.date}
         return model_dict
 
     def get_data_for_feed(self):
         """ получение короткие модели в ленту
         :return: короткие данные о модели"""
-        short_model_dict = {'title': self.title, 'theme': self.theme,
-                            'brief': self.brief}
+        short_model_dict = {'id': self.id, 'title': self.title, 'theme': self.theme,
+                            'brief': self.brief, 'date': self.date}
         return short_model_dict
 
 
@@ -38,14 +39,19 @@ class NewsList:
         self.content = []
 
     def add_content(self, converted_news: List[News]):
-        if self.content:
-            # проверка, не дублируются ли новости
-            converted_news = list(filter(lambda x: x.date > self.content[-1].date, converted_news))
-        self.content += converted_news
+        self.content += [_ for _ in converted_news if _ not in self.content]
 
-    def get_certain_category(self, category: List):
+    def get_certain_category(self, category: List) -> List[News]:
         """фильтрация получаемых новостей по категории(ям)
         :param category: список категорий(и), новости по которым нужно получить
         :return: отфильрованный по категории(ям) список новостей"""
+        try:
+            iter(category)
+            _ = category[0]
+        except TypeError:
+            raise TypeError
+        except IndexError:
+            raise IndexError
+
         return list(filter(lambda x: x.theme in category, self.content))
 
