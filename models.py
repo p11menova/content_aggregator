@@ -1,3 +1,5 @@
+"""описание моделей Новостей и НовостныхСписков"""
+
 from typing import List
 import uuid
 
@@ -21,17 +23,25 @@ class News:
     def get_data(self):
         """ получение полных моделей
         :return: все данные о модели """
-        model_dict = {'id': self.id, 'title': self.title,
-                      'theme': self.theme, 'text': self.text,
-                      'date': self.date}
-        return model_dict
+        return {
+            'id': self.id,
+            'title': self.title,
+            'theme': self.theme,
+            'text': self.text,
+            'date': self.date
+        }
 
     def get_data_for_feed(self):
         """ получение короткие модели в ленту
         :return: короткие данные о модели"""
-        short_model_dict = {'id': self.id, 'title': self.title, 'theme': self.theme,
-                            'brief': self.brief, 'date': self.date}
-        return short_model_dict
+
+        return {
+            'id': self.id,
+            'title': self.title,
+            'theme': self.theme,
+            'brief': self.brief,
+            'date': self.date
+        }
 
 
 class NewsList:
@@ -45,13 +55,7 @@ class NewsList:
         """фильтрация получаемых новостей по категории(ям)
         :param category: список категорий(и), новости по которым нужно получить
         :return: отфильрованный по категории(ям) список новостей"""
-        try:
-            iter(category)
-            _ = category[0]
-        except TypeError:
-            raise TypeError
-        except IndexError:
-            raise IndexError
-
+        if not isinstance(category, list):
+            return self.content
         return list(filter(lambda x: x.theme in category, self.content))
 
