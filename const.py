@@ -18,5 +18,10 @@ CATEGORIES = {
     NewsCategories.activity: ('Спорт', 'Путешествия')
 }
 
+
+DB_NAME = 'News'
+COLLECTION_NAME = 'NewsList'
+
 FORMAT_FROM = "%a, %d %b %Y %H:%M:%S %z"
 FORMAT_TO = "%a %d %b %Y %H:%M:%S"
+

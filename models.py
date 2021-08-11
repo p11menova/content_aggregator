@@ -1,7 +1,8 @@
 """описание моделей Новостей и НовостныхСписков"""
 
 from typing import List
-import uuid
+from pymongo import MongoClient
+from const import *
 
 
 class News:
@@ -13,7 +14,6 @@ class News:
         :param brief: краткое содержание
         :param text: основной текст новости
         :param date: дата опубликования"""
-        self.id = uuid.uuid4()
         self.theme = theme
         self.title = title
         self.brief = brief
@@ -23,9 +23,10 @@ class News:
     def get_data(self):
         """ получение полных моделей
         :return: все данные о модели """
+
         return {
-            'id': self.id,
             'title': self.title,
+            'brief': self.brief,
             'theme': self.theme,
             'text': self.text,
             'date': self.date
@@ -36,7 +37,6 @@ class News:
         :return: короткие данные о модели"""
 
         return {
-            'id': self.id,
             'title': self.title,
             'theme': self.theme,
             'brief': self.brief,
@@ -44,18 +44,31 @@ class News:
         }
 
 
-class NewsList:
-    def __init__(self):
-        self.content = []
+class DBWork:
+    """ класс работы с БД """
 
-    def add_content(self, converted_news: List[News]):
-        self.content += [_ for _ in converted_news if _ not in self.content]
+    client = MongoClient("mongodb+srv://p1menowa:Nr44Kvt!@firstcluster.l2dlg.mongodb.net/News?retryWrites=true&w=majority")
+    db = client.get_database(DB_NAME)
 
-    def get_certain_category(self, category: List) -> List[News]:
-        """фильтрация получаемых новостей по категории(ям)
-        :param category: список категорий(и), новости по которым нужно получить
-        :return: отфильрованный по категории(ям) список новостей"""
-        if not isinstance(category, list):
-            return self.content
-        return list(filter(lambda x: x.theme in category, self.content))
+    def insert_one_doc(self, data: dict):
+        DBWork.db.NewsList.insert_one(data)
+
+    def insert_data(self, data: List[News]):
+        DBWork.db.NewsList.insert_many([news_instance.get_data() for news_instance in data])
+
+    def get_one_doc(self, collection_name: str, filter: dict):
+        return DBWork.db.get_collection(collection_name).find_one(filter)
+
+    def get_data(self, collection_name: str, filter=None):
+        # if filter:
+        #     return DBWork.db.get_collection(collection_name).find(filter)
+        return DBWork.db.get_collection(collection_name).find(filter)
+
+    def delete_one_doc(self, collection_name:str, filter: dict):
+        DBWork.db.NewsList.delete_one(filter)
+
+    def delete_data(self, collection_name: str, filter=None):
+        if filter is None:
+            filter = {}
+        DBWork.db.get_collection(collection_name).delete_many(filter)
 

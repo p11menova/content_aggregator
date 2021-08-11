@@ -1,4 +1,4 @@
-from models.models import News, NewsList
+from models.models import News, DBWork
 from typing import List
 from const import *
 import requests
@@ -8,7 +8,7 @@ from helpers import convert_to_correct_format
 
 def get_content() -> List:
     """ запрос получения исходных данных источнику
-     :return: данные из источников"""
+     :return: данные из источников """
     lenta_content = []
     try:
         response = requests.get('https://lenta.ru/rss/')
@@ -21,12 +21,12 @@ def get_content() -> List:
 def convert_to_classes(news_from_source: List) -> List[News]:
     """ преобразование исходных данных в экземпляры класса
     :param news_from_source: данные, полученные из источников
-    :return: список данных, конвертированных в экземпляры News"""
+    :return: список данных, конвертированных в экземпляры News """
     converted_news = []
 
     for elem in news_from_source:
         try:
-            instance = News(theme=elem.find('category').getText(),
+            instance = News(theme=define_my_category(elem.find('category').getText()),
                             title=elem.find('title').getText(),
                             brief=elem.find('description').getText().strip(),
                             text=elem.find('description').getText().strip(),
@@ -39,23 +39,22 @@ def convert_to_classes(news_from_source: List) -> List[News]:
     return converted_news
 
 
-myNewsList = NewsList()
+def define_my_category(elem_category: str):
+    """ распределение исходных данных по моим категориям """
+    return ([k for k, v in CATEGORIES.items() if elem_category in v] or
+                      [NewsCategories.other])[0]
 
 
-def save_to_newslist(converted_news: List[News]):
-    """ сохранение новостей в NewsList
-     :param converted_news: новости, конвертированные в экземпляры News"""
-    for instance in converted_news:
-        instance.theme = ([k for k, v in CATEGORIES.items() if instance.theme in v] or
-                          [NewsCategories.other])[0]
-        myNewsList.add_content(converted_news)
+dbw1 = DBWork()
 
 
 def main():
     news_from_source = get_content()
     converted_news = convert_to_classes(news_from_source)
-    save_to_newslist(converted_news)
-    filtered_with_category_news = myNewsList.get_certain_category(['Политика'])
+
+    dbw1.insert_data(converted_news)
+    #dbw1.delete_data(COLLECTION_NAME)
+    print([a for a in dbw1.get_data(COLLECTION_NAME, filter={'theme': 'СМИ'})])
 
 
 if __name__ == '__main__':
