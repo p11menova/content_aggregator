@@ -54,7 +54,7 @@ def main():
 
     dbw1.insert_data(converted_news)
     #dbw1.delete_data(COLLECTION_NAME)
-    print([a for a in dbw1.get_data(COLLECTION_NAME, filter={'theme': 'СМИ'})])
+    print(len([a for a in dbw1.get_data(COLLECTION_NAME)]))
 
 
 if __name__ == '__main__':

@@ -43,32 +43,81 @@ class News:
             'date': self.date
         }
 
+    def get_title(self):
+        return {
+            'title': self.title
+        }
+
 
 class DBWork:
     """ класс работы с БД """
 
-    client = MongoClient("mongodb+srv://p1menowa:Nr44Kvt!@firstcluster.l2dlg.mongodb.net/News?retryWrites=true&w=majority")
-    db = client.get_database(DB_NAME)
+    def __init__(self):
+        """ Инит класса
+        """
+        self.client = MongoClient(DB_URL)
+        self.db = self.client.get_database(DB_NAME)
 
-    def insert_one_doc(self, data: dict):
-        DBWork.db.NewsList.insert_one(data)
+        self.titles_field = self.db.NewsList.find({}, ({'_id': 0, 'title': 1}))
+
+    def insert_one_doc(self, instanse: News):
+        """
+        одиночное добавление новости в бд
+        :param instanse: одна новость экземпляра News"""
+        if not self.check_if_in(instanse.get_title()):
+            self.db.NewsList.insert_one(instanse.get_data())
 
     def insert_data(self, data: List[News]):
-        DBWork.db.NewsList.insert_many([news_instance.get_data() for news_instance in data])
+        """
+        массовое добавление новостей в бд
+        :param data: список новостей конвертированные в экземпляры News
+        """
+        data_for_insert = [news_instance.get_data() for news_instance in data
+                                      if not self.check_if_in(news_instance.get_title())]
+        if data_for_insert:
+            self.db.NewsList.insert_many(data_for_insert)
 
-    def get_one_doc(self, collection_name: str, filter: dict):
-        return DBWork.db.get_collection(collection_name).find_one(filter)
+    def check_if_in(self, instanse_title: dict):
+        """
+        проверка, нет ли новости в бд
+        :param instanse_title: заголовок новости
+        :return: правда/ложь, есть ли новость в бд
+        """
+        return True if instanse_title in self.titles_field else False
 
-    def get_data(self, collection_name: str, filter=None):
-        # if filter:
-        #     return DBWork.db.get_collection(collection_name).find(filter)
-        return DBWork.db.get_collection(collection_name).find(filter)
+    def get_one_doc(self, collection_name: str, site_filter: dict):
+        """
+        одиночное получение новости из бд
+        :param collection_name: имя коллекции
+        :param site_filter: фильтр
+        :return: одна новость по фильтру
+        """
+        return self.db.get_collection(collection_name).find_one(site_filter)
 
-    def delete_one_doc(self, collection_name:str, filter: dict):
-        DBWork.db.NewsList.delete_one(filter)
+    def get_data(self, collection_name: str, site_filter=None):
 
-    def delete_data(self, collection_name: str, filter=None):
-        if filter is None:
-            filter = {}
-        DBWork.db.get_collection(collection_name).delete_many(filter)
+        """
+        массовое получение новостей из бд
+        :param collection_name: имя коллекции
+        :param site_filter: фильтр
+        :return: несколько новостей по фильтру
+        """
+        return self.db.get_collection(collection_name).find(site_filter)
+
+    def delete_one_doc(self, collection_name: str, site_filter: dict):
+        """
+        одиночное удаление новости из бд
+        :param collection_name: имя коллекции
+        :param site_filter: фильтр
+        """
+        self.db.get_collection(collection_name).delete_one(site_filter)
+
+    def delete_data(self, collection_name: str, site_filter=None):
+        """
+        массовое удаление новостей из бд
+        :param collection_name: имя коллекции
+        :param site_filter: фильтр
+        """
+        site_filter = site_filter or {}
+        self.db.get_collection(collection_name).delete_many(site_filter)
 

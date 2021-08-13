@@ -21,6 +21,7 @@ CATEGORIES = {
 
 DB_NAME = 'News'
 COLLECTION_NAME = 'NewsList'
+DB_URL = "mongodb+srv://p1menowa:Nr44Kvt!@firstcluster.l2dlg.mongodb.net/News?retryWrites=true&w=majority"
 
 FORMAT_FROM = "%a, %d %b %Y %H:%M:%S %z"
 FORMAT_TO = "%a %d %b %Y %H:%M:%S"
